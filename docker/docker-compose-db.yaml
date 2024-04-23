@@ -17,6 +17,8 @@ services:
       POSTGRES_PASSWORD: ${DB_DASHBOARD_PASSWORD}
     volumes:
       - ./db-data/postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${DB_DASHBOARD_PORT}:5432"
 
   postgres-manager:
     image: postgis/postgis:16-3.4
@@ -29,7 +31,7 @@ services:
     volumes:
       - ./db-data/postgres-manager-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${DB_MANAGER_PORT}:5432"
 
   pgadmin:
     image: dpage/pgadmin4:latest
