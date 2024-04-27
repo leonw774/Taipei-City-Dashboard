@@ -20,6 +20,8 @@ const (
 	DashboardLimitTotalRequestsTimes = 1000
 	IssueLimitAPIRequestsTimes       = 20
 	IssueLimitTotalRequestsTimes     = 200
+	ContributorLimitAPIRequestsTimes   = 20
+	ContributorLimitTotalRequestsTimes = 200
 	LimitRequestsDuration            = 60 * time.Second
 
 	// JWT Issuer

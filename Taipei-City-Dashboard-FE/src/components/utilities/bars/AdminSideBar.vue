@@ -61,6 +61,12 @@ onMounted(() => {
       :expanded="isExpanded"
       index="edit-component"
     />
+	<SideBarTab
+      icon="edit_note"
+      title="編輯協作者"
+      :expanded="isExpanded"
+      index="contributor"
+    />
     <h2>{{ isExpanded ? `問題回報` : `問題` }}</h2>
     <SideBarTab
       icon="bug_report"

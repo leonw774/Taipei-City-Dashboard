@@ -31,6 +31,10 @@ export const useAdminStore = defineStore("admin", {
 		users: [],
 		userResults: 0,
 		currentUser: null,
+		// Edit Contributor (for /admin/contributor)
+		contributors: [],
+		contributorResults: 0,
+		currentContributor: null,
 	}),
 	actions: {
 		/* Utility functions to access loading and error states in contentStore */
@@ -297,5 +301,29 @@ export const useAdminStore = defineStore("admin", {
 
 			this.currentUser = null;
 		},
+
+		/* Contributor */
+		// 1. Get all contributors
+		async getContributor(params) {
+			const apiParams = JSON.parse(JSON.stringify(params));
+
+			const response = await http.get(`/contributor/`, {
+				params: apiParams,
+			});
+			this.contributors = response.data.data;
+			this.contributorResults = response.data.results;
+			this.setLoading(false);
+		},
+		// 2. Update a contributor
+		async updateContributor(params) {
+			const dialogStore = useDialogStore();
+
+			const editedContributor = JSON.parse(JSON.stringify(this.currentContributor));
+
+			await http.patch(`/contributor/${this.currentContributor.id}`, editedContributor);
+			dialogStore.showNotification("success", "協作者更新成功");
+			this.getContributors(params);
+			this.currentContributor = null;
+		}
 	},
 });
