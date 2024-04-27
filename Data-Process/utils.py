@@ -8,7 +8,6 @@ from sqlalchemy import (
     create_engine, text,
     URL, CursorResult, Connection
 )
-from sqlalchemy.exc import IntegrityError 
 from get_env import *
 
 ### TYPINGS
@@ -167,24 +166,28 @@ def get_now_timestamp() -> str:
 
 @dataclass
 class TableBase:
+    table_name: ClassVar[str]
+    primary_key_field: ClassVar[str]
+
     def insert(
             self,
             conn: Connection,
             on_conflict_do: Literal['nothing', 'update'] = 'nothing') -> None:
         assert on_conflict_do in ('nothing', 'update')
         insert_row(
-            conn,
-            self.table_name,
-            vars(self),
-            on_conflict_do,
-            [self.primary_key_field]
+            conn=conn,
+            table_name=self.table_name,
+            row_dict=vars(self),
+            on_conflict_do=on_conflict_do,
+            constraint_fields=[self.primary_key_field]
         )
 
     def update(self, conn: Connection) -> None:
         self_dict = vars(self)
         pk_value = self_dict.pop(self.primary_key_field)
         update_row(
-            self.table_name,
+            conn=conn,
+            table_name=self.table_name,
             set_dict=self_dict,
             where_dict={self.primary_key_field: pk_value},
         )
@@ -217,18 +220,16 @@ class ComponentManager(TableBase):
     id: int # primary key, number id of components
     index: str # the name of component used by api
     name: str # the name to appear on website
-    query_type: Literal[
-        'time', 'map_legend', 'percent', 'two_d', 'three_d'
-    ]
+    query_type: Literal['time', 'map_legend', 'percent', 'two_d', 'three_d']
     query_chart: str # the sql query for the data
 
     ### optional
-    history_config: Optional[JsonDict] = None # visual setting for history data
+    history_config: Optional[JsonDict] = None # visual setting for history
     map_config_ids: List[int] = field(default_factory=list) # maps to filter
-    map_filter: Optional[JsonDict] = None # how to filters map
+    map_filter: Optional[JsonDict] = None # how to filter map
     time_from: Literal[
-        'static', 'demo', 'current',
-        'max', 'tenyear_ago', 'fiveyear_ago', 'twoyear_ago', 'year_ago',
+        'static', 'demo', 'current', 'max',
+        'tenyear_ago', 'fiveyear_ago', 'twoyear_ago', 'year_ago',
         'halfyear_ago', 'quarter_ago', 'month_ago', 'week_ago', 'day_ago'
     ] = 'demo'
     time_to: Optional[Literal['now']] = None

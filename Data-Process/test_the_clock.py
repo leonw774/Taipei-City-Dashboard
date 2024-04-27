@@ -75,7 +75,7 @@ with manager_engine.connect() as conn:
         color=['#5fa0fa', '#e56056'],
         types=['RadarChart'],
         unit='單位'
-    ).insert(conn)
+    ).insert(conn, on_conflict_do='update')
 
     add_component_into_dashboard(
         conn, clock_component_id, 'demo-components'
