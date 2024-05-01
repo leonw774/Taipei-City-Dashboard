@@ -226,10 +226,13 @@ export const useContentStore = defineStore("content", {
 		},
 		// 5. Call an API to get contributor data (result consists of id, name, link)
 		setContributors() {
-			axios
-				.get(`/dashboards/all_contributors.json`)
+			// axios.get(`/dashboards/all_contributors.json`)
+			http.get(`/contributor/`)
 				.then((rs) => {
-					this.contributors = rs.data.data;
+					for (let i = 0; i < rs.data.data.length; ++i) {
+						this.contributors[rs.data.data[i].id] = rs.data.data[i];
+					}
+					console.log(this.contributors);
 				})
 				.catch((e) => console.error(e));
 		},

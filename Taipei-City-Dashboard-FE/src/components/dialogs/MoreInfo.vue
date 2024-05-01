@@ -91,7 +91,7 @@ function getLinkTag(link, index) {
                   target="_blank"
                   rel="noreferrer"
                 ><img
-                  :src="`/images/contributors/${
+                  :src="`${
                     contentStore.contributors[
                       contributor
                     ].image
@@ -100,7 +100,7 @@ function getLinkTag(link, index) {
                         // eslint-disable-next-line no-mixed-spaces-and-tabs
                       ].image
                       : contributor
-                  }.png`"
+                  }`"
                   :alt="`協作者-${contentStore.contributors[contributor].name}`"
                 >
                 </a>

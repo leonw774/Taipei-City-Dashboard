@@ -4,7 +4,6 @@ import (
 	"TaipeiCityDashboardBE/app/models"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -74,14 +73,8 @@ UpdateContributor modifies a contributor by ID
 PATCH /api/v1/contributor/:id
 */
 func UpdateContributor(c *gin.Context) {
-	// Check ID format
-	contributorID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "Invalid value for contributor ID"})
-		return
-	}
-
 	// Check if contributor exists
+	contributorID := c.Param("id")
 	contributor, err := models.GetContributorByID(contributorID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No contributor found"})

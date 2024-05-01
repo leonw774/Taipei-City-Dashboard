@@ -3,7 +3,7 @@ package models
 /* ----- Models ----- */
 
 type Contributor struct {
-	ID 			int		`json:"id" gorm:"column:id;autoincrement;primeryKey"` // id
+	ID 			string  `json:"id" gorm:"column:id;autoincrement;primeryKey"` // id
 	Name		string	`json:"name" gorm:"column:name;typpe:varchar"` // Name to show on FE
 	ProfileLink	string	`json:"link" gorm:"column:link;type:varchar"` // url for hyperlink 
 	ImageLink	string	`json:"image" gorm:"column:image;type:varchar"` // url for avatar image
@@ -54,7 +54,7 @@ func GetAllContributors(pageSize int, pageNum int, sort string, order string, se
 	return contributors, totalContributors, resultNum, nil
 } 
 
-func GetContributorByID(contributorID int) (contributor Contributor, err error) {
+func GetContributorByID(contributorID string) (contributor Contributor, err error) {
 	err = DBManager.Table("contributors").Where("id = ?", contributorID).First(&contributor).Error
 	if err != nil {
 		return contributor, nil
@@ -71,7 +71,7 @@ func AddContributor(name string, profileLink string, imageLink string) (contribu
 	return contributor, err
 }
 
-func UpdateContributor(id int, name string, profileLink string, imageLink string) (contributor Contributor, err error) {
+func UpdateContributor(id string, name string, profileLink string, imageLink string) (contributor Contributor, err error) {
 	contributor.Name = name
 	contributor.ProfileLink = profileLink
 	contributor.ImageLink = imageLink
@@ -79,7 +79,7 @@ func UpdateContributor(id int, name string, profileLink string, imageLink string
 	return contributor, err
 }
 
-func DeleteContributor(id int) error {
+func DeleteContributor(id string) error {
 	// Start a transaction to ensure data integrity.
 	tx := DBManager.Begin()
 
