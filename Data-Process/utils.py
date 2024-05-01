@@ -5,7 +5,7 @@ from typing import Any, Dict, List, ClassVar, Union, Literal, Optional
 
 import pandas as pd
 from sqlalchemy import (
-    create_engine, text,
+    create_engine, inspect, text,
     URL, CursorResult, Connection
 )
 from get_env import *
@@ -23,7 +23,7 @@ BASIC_TYPES = (type(None), int, float, str)
 
 ### DATABASE CONNECTIONS
 
-MANAGER_URL = URL.create(
+MANAGER_DB_URL = URL.create(
     "postgresql+psycopg2",
     host="localhost",
     port=ENVS['DB_MANAGER_PORT'],
@@ -33,9 +33,9 @@ MANAGER_URL = URL.create(
 )
 
 def get_manager_engine():
-    return create_engine(MANAGER_URL)
+    return create_engine(MANAGER_DB_URL)
 
-DASHBORD_URL = URL.create(
+DATA_DB_URL = URL.create(
     "postgresql+psycopg2",
     host="localhost",
     port=ENVS['DB_DASHBOARD_PORT'],
@@ -44,13 +44,13 @@ DASHBORD_URL = URL.create(
     database=ENVS['DB_DASHBOARD_DBNAME']
 )
 
-def get_dashboard_engine():
-    return create_engine(DASHBORD_URL)
+def get_data_engine():
+    return create_engine(DATA_DB_URL)
 
 
 ### HELPER FUNCTIONS
 
-def insert_row(
+def insert_clause(
         conn: Connection,
         table_name: str,
         row_dict: Dict[str, DBValueType],
@@ -77,7 +77,7 @@ def insert_row(
     # print(stmt)
     return conn.execute(text(stmt))
 
-def delete_row(
+def delete_clause(
         conn: Connection,
         table_name: str,
         where_dict: Dict[str, DBValueType]) -> CursorResult[Any]:
@@ -88,7 +88,7 @@ def delete_row(
     # print(stmt)
     return conn.execute(text(stmt))
 
-def update_row(
+def update_clause(
         conn: Connection,
         table_name: str,
         set_dict: Dict[str, Any],
@@ -134,10 +134,52 @@ def pg_repr(obj: DBValueType) -> str:
         # )
         
         # dont need check, just use json.dump
-        return json.dumps(obj)
+        return '\'' + json.dumps(obj) + '\''
 
     # default
     return repr(obj)
+
+def init_data_table_with_df(
+        df: pd.DataFrame,
+        table_name: str,
+        on_conflict_do: str = Literal['nothing', 'update'],
+        constraint_fields: Optional[List[str]] = None,
+        **to_sql_kwargs):
+    """Create new table with pandas dataframe. If table already exists,
+    insert rows in the dataframe one by one. This will not delete any
+    existing row.
+    """
+    print(f'Start initialize table {table_name}')
+    data_engine = get_data_engine()
+    if not inspect(data_engine).has_table(table_name, scheme='public'):
+        with data_engine.connect() as conn:
+            df.to_sql(
+                table_name,
+                conn,
+                index=False,
+                schema='public',
+                **to_sql_kwargs
+            )
+            if constraint_fields is not None:
+                pk_str = ','.join(constraint_fields) 
+                conn.execute(text(
+                    f'ALTER TABLE {table_name} ADD PRIMARY KEY ({pk_str})'
+                ))
+            conn.commit()
+    else:
+        print(f'Table {table_name} already exists, use INSERTs')
+        with data_engine.connect() as conn:
+            for row_dict in df.to_dict(orient='records'):
+                insert_clause(
+                    conn=conn,
+                    table_name=table_name,
+                    row_dict=row_dict,
+                    on_conflict_do=on_conflict_do,
+                    constraint_fields=constraint_fields
+                )
+            conn.commit()
+    print(f'Successfully initialized {table_name}')
+
 
 def add_component_into_dashboard(
         conn: Connection,
@@ -151,7 +193,7 @@ def add_component_into_dashboard(
     if component_id in original_components:
         return
     new_components = original_components + [component_id]
-    update_row(
+    update_clause(
         conn,
         table_name='dashboards',
         set_dict={'components': new_components},
@@ -174,7 +216,7 @@ class TableBase:
             conn: Connection,
             on_conflict_do: Literal['nothing', 'update'] = 'nothing') -> None:
         assert on_conflict_do in ('nothing', 'update')
-        insert_row(
+        insert_clause(
             conn=conn,
             table_name=self.table_name,
             row_dict=vars(self),
@@ -185,12 +227,41 @@ class TableBase:
     def update(self, conn: Connection) -> None:
         self_dict = vars(self)
         pk_value = self_dict.pop(self.primary_key_field)
-        update_row(
+        update_clause(
             conn=conn,
             table_name=self.table_name,
             set_dict=self_dict,
             where_dict={self.primary_key_field: pk_value},
         )
+
+# Data types and their compatiable chart type
+# two_d:
+#   DonutChart
+#   BarChart
+#   ColumnChart
+#   TreemapChart
+#   DistrictChart
+#   RadarChart
+#   PolarAreaChart
+#   MetroChart
+# three_d:
+#   ColumnChart
+#   BarPercentChart
+#   RadarChart
+#   DistrictChart
+#   HeatmapChart
+#   PolarAreaChart
+# time:
+#   TimelineSeparateChart
+#   TimelineStackedChart
+#   ColumnLineChart
+# percent:
+#   GuageChart
+#   BarPercentChart
+#   BarChartWithGoal
+#   IconPercentChart
+# map_legend:
+#   MapLegend
 
 @dataclass
 class ComponentChartConfig(TableBase):
@@ -245,6 +316,7 @@ class ComponentManager(TableBase):
     use_case: Optional[str] = None
     links: List[str] = field(default_factory=list)
     contributors: List[str] = field(default_factory=list)
+    query_history: Optional[str] = None # sql query for retrieving history data
 
     ### constants
     table_name: ClassVar[str] = 'public.components'

@@ -232,7 +232,6 @@ export const useContentStore = defineStore("content", {
 					for (let i = 0; i < rs.data.data.length; ++i) {
 						this.contributors[rs.data.data[i].id] = rs.data.data[i];
 					}
-					console.log(this.contributors);
 				})
 				.catch((e) => console.error(e));
 		},

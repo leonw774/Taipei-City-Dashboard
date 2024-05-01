@@ -1,53 +1,41 @@
 import io
-from datetime import datetime, UTC
+from datetime import datetime
 import pytz
 from time import sleep
-import random
 
-from sqlalchemy import inspect
 import pandas as pd
 
 from utils import *
 
-# Data DB
+# Init Data DB
 
 clock_table_name = 'the_clock'
-data_engine = get_dashboard_engine()
-if not inspect(data_engine).has_table(clock_table_name, scheme='public'):
-    # Load CSV into a pandas DataFrame
-    buffer_csv = b'tick,hour_hand,minute_hand\n'
-    for tick in range(60):
-        # rand = random.randint(1, 10)
-        # buffer_csv += f'{tick},{rand}\n'.encode()
-        buffer_csv += f'{tick},0,0\n'.encode()
-    buffer_csv = io.BytesIO(buffer_csv)
-    df = pd.read_csv(buffer_csv)
+# Make CSV buffer and load into pandas DataFrame
+buffer_csv = b'tick,hour_hand,minute_hand\n'
+for tick in range(60):
+    # rand = random.randint(1, 10)
+    # buffer_csv += f'{tick},{rand}\n'.encode()
+    buffer_csv += f'{tick},0,0\n'.encode()
+buffer_csv = io.BytesIO(buffer_csv)
+df = pd.read_csv(buffer_csv)
+init_data_table_with_df(
+    df=df,
+    table_name=clock_table_name,
+    on_conflict_do='update',
+    constraint_fields=['tick']
+)
 
-    with data_engine.connect() as conn:
-        df.to_sql(clock_table_name, conn, index=False, schema='public')
-        conn.commit()
-else:
-    # set all to 0
-    with data_engine.connect() as conn:
-        update_row(
-            conn,
-            table_name=clock_table_name,
-            set_dict={'hour_hand': 0, 'minute_hand': 0},
-        )
-        conn.commit()
-print('initialized the clock table')
-
-# Manager DB
+# Set Manager DB
 
 manager_engine = get_manager_engine()
 clock_component_id = 87
 clock_index = 'the_clock'
 chart_query = (
-    """(SELECT tick AS x_axis, 'hour' AS y_axis, hour_hand AS data
-    FROM the_clock)
+    f"""(SELECT tick AS x_axis, 'hour' AS y_axis, hour_hand AS data
+    FROM {clock_table_name})
     UNION
     (SELECT tick AS x_axis, 'minute' AS y_axis, minute_hand AS data
-    FROM the_clock)
+    FROM {clock_table_name})
     ORDER BY x_axis ASC
     """
 )
@@ -56,6 +44,8 @@ with manager_engine.connect() as conn:
         id=clock_component_id,
         index=clock_index,
         name='時鐘',
+        query_type='three_d',
+        query_chart=chart_query,
         map_config_ids=[],
         map_filter=None,
         time_from='current',
@@ -66,8 +56,6 @@ with manager_engine.connect() as conn:
         short_desc='時鐘',
         long_desc='顯示現在時間，精準到分鐘',
         use_case='看現在時間',
-        query_type='three_d',
-        query_chart=chart_query
     ).insert(conn, on_conflict_do='update')
 
     ComponentChartConfig(
@@ -81,8 +69,10 @@ with manager_engine.connect() as conn:
         conn, clock_component_id, 'demo-components'
     )
     conn.commit()
-    
 
+# Update Data DB
+
+data_engine = get_data_engine()
 minute_hand_length = 5
 hour_hand_length = 3
 prev_hour_tick, prev_min_tick = 0, 0
@@ -97,30 +87,30 @@ while True:
         cur_min_tick = cur_min
         cur_hour_tick = (cur_hour % 12) * 5 + cur_min // 12
         if cur_min_tick != prev_min_tick:
-            update_row(
-                conn,
-                clock_table_name,
-                {'minute_hand': 0},
-                {'tick': prev_min_tick}
+            update_clause(
+                conn=conn,
+                table_name=clock_table_name,
+                set_dict={'minute_hand': 0},
+                where_dict={'tick': prev_min_tick}
             )
-            update_row(
-                conn,
-                clock_table_name,
-                {'minute_hand': minute_hand_length},
-                {'tick': cur_min_tick}
+            update_clause(
+                conn=conn,
+                table_name=clock_table_name,
+                set_dict={'minute_hand': minute_hand_length},
+                where_dict={'tick': cur_min_tick}
             )
         if cur_hour_tick != prev_hour_tick:
-            update_row(
-                conn,
-                clock_table_name,
-                {'hour_hand': 0},
-                {'tick': prev_hour_tick}
+            update_clause(
+                conn=conn,
+                table_name=clock_table_name,
+                set_dict={'hour_hand': 0},
+                where_dict={'tick': prev_hour_tick}
             )
-            update_row(
-                conn,
-                clock_table_name,
-                {'hour_hand': hour_hand_length},
-                {'tick': cur_hour_tick}
+            update_clause(
+                conn=conn,
+                table_name=clock_table_name,
+                set_dict={'hour_hand': hour_hand_length},
+                where_dict={'tick': cur_hour_tick}
             )
         if (cur_min_tick != prev_min_tick
             or cur_hour_tick != prev_hour_tick):

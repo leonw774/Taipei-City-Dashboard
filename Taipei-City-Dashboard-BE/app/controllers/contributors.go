@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"TaipeiCityDashboardBE/app/models"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,7 +29,7 @@ func GetAllContributors(c *gin.Context) {
 	// Get query parameter
 	var query contributorQuery
 	c.ShouldBindQuery(&query)
-	fmt.Printf("%+v\n", query)
+	// fmt.Printf("%+v\n", query)
 
 	contributors, totalContributors, resultNum, err := models.GetAllContributors(query.PageSize, query.PageNum, query.Sort, query.Order, query.SearchByID, query.SearchByName)
 	if err != nil {
