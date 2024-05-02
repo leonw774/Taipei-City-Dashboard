@@ -13,7 +13,7 @@ import mapboxGl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import axios from "axios";
 import { Threebox } from "threebox-plugin";
-import { featureCollection, voronoi, point, isolines, interpolate } from "@turf/turf"
+import { bbox, booleanWithin, featureCollection, flatten, isolines, lineSplit, multiLineString, point, pointOnFeature, polygon, polygonToLine, voronoi } from "@turf/turf"
 
 // Other Stores
 import { useAuthStore } from "./authStore";
@@ -39,6 +39,45 @@ import { calculateGradientSteps } from "../assets/configs/mapbox/arcGradient";
 // import { voronoi } from "../assets/utilityFunctions/voronoi.js";
 import { interpolation } from "../assets/utilityFunctions/interpolation.js";
 import { marchingSquare } from "../assets/utilityFunctions/marchingSquare.js";
+
+let taipeiPolygon = polygon([[
+	[121.51840, 25.17195],
+	[121.52360, 25.18261],
+	[121.56061, 25.21125],
+	[121.58707, 25.19396],
+	[121.58095, 25.16780],
+	[121.59074, 25.16462],
+	[121.60833, 25.13056],
+	[121.60833, 25.12987],
+	[121.59915, 25.11201],
+	[121.63081, 25.09608],
+	[121.62194, 25.04081],
+	[121.62270, 25.04136],
+	[121.66552, 25.03083],
+	[121.66460, 25.02279],
+	[121.60129, 25.01351],
+	[121.60328, 24.97775],
+	[121.62545, 24.96998],
+	[121.59777, 24.96014],
+	[121.55985, 24.96416],
+	[121.55878, 24.96388],
+	[121.55312, 24.97996],
+	[121.53140, 24.98925],
+	[121.52911, 25.00727],
+	[121.51488, 25.02113],
+	[121.51504, 25.02085],
+	[121.49210, 25.00519],
+	[121.47986, 25.04053],
+	[121.50097, 25.04635],
+	[121.50601, 25.06436],
+	[121.50051, 25.08680],
+	[121.48200, 25.09926],
+	[121.45509, 25.10203],
+	[121.45646, 25.12821],
+	[121.50312, 25.17418],
+	[121.51840, 25.17195]
+]]);
+let taipeiBBox = bbox(taipeiPolygon);
 
 export const useMapStore = defineStore("map", {
 	state: () => ({
@@ -419,7 +458,7 @@ export const useMapStore = defineStore("map", {
 			let voronoi_source = {
 				type: data.type,
 				crs: data.crs,
-				features: [],
+				features: [taipeiPolygon],
 			};
 
 			// Get features alone
@@ -451,26 +490,35 @@ export const useMapStore = defineStore("map", {
 				)
 			);
 
-			// square bbox
-			let lngStart = 121.42955;
-			let lngEnd = 121.68351;
-			let latStart = 24.94679;
-			let latEnd = 25.21811;
-			let bbox = [lngStart,latStart,lngEnd,latEnd];
-
 			// Calculate cell for each coordinate
-			let cells = voronoi(pointCollection, {"bbox": bbox});
+			let cells = voronoi(pointCollection, {"bbox": taipeiBBox});
 
 			// Push cell outlines to source data
 			for (let i = 0; i < cells.features.length; i++) {
-				console.log(cells.features[i]);
-				voronoi_source.features.push({
+				let curLineString = {
 					...features[i],
 					geometry: {
 						type: "LineString",
 						coordinates: cells.features[i].geometry.coordinates[0]
 					},
-				});
+				}
+
+				// check if current line is in taipeiPolygon
+				if (booleanWithin(curLineString, taipeiPolygon)) {
+					voronoi_source.features.push(curLineString);
+				}
+				else {
+					// split current line with taipeiPolygon and check each again
+					let splitLines = lineSplit(curLineString, taipeiPolygon);
+					splitLines.features.forEach(
+						line => {
+							let pof = pointOnFeature(line);
+							if (booleanWithin(pof, taipeiPolygon)) {
+								voronoi_source.features.push(line);
+							}
+						}
+					)
+				}
 			}
 
 			// Add source and layer
@@ -487,6 +535,13 @@ export const useMapStore = defineStore("map", {
 		// Developed by 00:21, Taipei Codefest 2023
 		AddIsolineMapLayer(map_config, data) {
 			this.loadingLayers.push("rendering");
+
+			let isoline_source = {
+				type: data.type,
+				crs: data.crs,
+				features: [taipeiPolygon],
+			};
+
 			// Step 1: Generate a 2D scalar field from known data points
 			// - Turn the original data into the format that can be accepted by interpolation()
 			let propertyName = map_config.paint?.["isoline-key"] || "value";
@@ -498,10 +553,10 @@ export const useMapStore = defineStore("map", {
 				};
 			});
 
-			let lngStart = 121.42955;
-			let lngEnd = 121.68351;
-			let latStart = 24.94679;
-			let latEnd = 25.21811;
+			let lngStart = taipeiBBox[0];
+			let latStart = taipeiBBox[1];
+			let lngEnd = taipeiBBox[2];
+			let latEnd = taipeiBBox[3];
 
 			let targetPoints = [];
 			let gridSize = 0.001;
@@ -532,13 +587,34 @@ export const useMapStore = defineStore("map", {
 			// [0 1 ... 17] ==> [40, 42, 44 ... 74]
 			let breaks = [...Array((74 - 40) / 2 + 1).keys()].map(v => (v * 2 + 40));
 			let isoline_data = isolines(interpolatedPointCollection, breaks, {zProperty: "value"});
-			console.log(isoline_data)
+			// flatten from MultiLineString to LineString
+			isoline_data = flatten(isoline_data);
 
+			isoline_data.features = isoline_data.features.filter(
+				curIsoLine => {
+					// check if current line is in taipeiPolygon
+					if (booleanWithin(curIsoLine, taipeiPolygon)) {
+						isoline_source.features.push(curIsoLine);
+					}
+					else {
+						// split current line with taipeiPolygon and check each again
+						let splitLines = lineSplit(curIsoLine, taipeiPolygon);
+						splitLines.features.forEach(
+							line => {
+								let pof = pointOnFeature(line);
+								if (booleanWithin(pof, taipeiPolygon)) {
+									isoline_source.features.push(line);
+								}
+							}
+						)
+					}
+				}
+			)
 			// Step 3: Add source and layer
 			this.map.addSource(`${map_config.layerId}-source`, {
 				type: "geojson",
 
-				data: { ...isoline_data },
+				data: { ...isoline_source },
 			});
 
 			delete map_config.paint?.["isoline-key"];
