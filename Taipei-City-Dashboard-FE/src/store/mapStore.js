@@ -13,7 +13,7 @@ import mapboxGl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import axios from "axios";
 import { Threebox } from "threebox-plugin";
-import { bbox, booleanWithin, featureCollection, flatten, isolines, lineSplit, multiLineString, point, pointOnFeature, polygon, polygonToLine, voronoi } from "@turf/turf"
+import { bbox, booleanContains, booleanWithin, featureCollection, flatten, isolines, lineSplit, point, polygon, voronoi } from "@turf/turf"
 
 // Other Stores
 import { useAuthStore } from "./authStore";
@@ -38,7 +38,7 @@ import { savedLocations } from "../assets/configs/mapbox/savedLocations.js";
 import { calculateGradientSteps } from "../assets/configs/mapbox/arcGradient";
 // import { voronoi } from "../assets/utilityFunctions/voronoi.js";
 import { interpolation } from "../assets/utilityFunctions/interpolation.js";
-import { marchingSquare } from "../assets/utilityFunctions/marchingSquare.js";
+// import { marchingSquare } from "../assets/utilityFunctions/marchingSquare.js";
 
 let taipeiPolygon = polygon([[
 	[121.51840, 25.17195],
@@ -52,19 +52,16 @@ let taipeiPolygon = polygon([[
 	[121.59915, 25.11201],
 	[121.63081, 25.09608],
 	[121.62194, 25.04081],
-	[121.62270, 25.04136],
 	[121.66552, 25.03083],
 	[121.66460, 25.02279],
 	[121.60129, 25.01351],
 	[121.60328, 24.97775],
 	[121.62545, 24.96998],
 	[121.59777, 24.96014],
-	[121.55985, 24.96416],
 	[121.55878, 24.96388],
 	[121.55312, 24.97996],
 	[121.53140, 24.98925],
 	[121.52911, 25.00727],
-	[121.51488, 25.02113],
 	[121.51504, 25.02085],
 	[121.49210, 25.00519],
 	[121.47986, 25.04053],
@@ -512,8 +509,7 @@ export const useMapStore = defineStore("map", {
 					let splitLines = lineSplit(curLineString, taipeiPolygon);
 					splitLines.features.forEach(
 						line => {
-							let pof = pointOnFeature(line);
-							if (booleanWithin(pof, taipeiPolygon)) {
+							if (booleanContains(taipeiPolygon, line)) {
 								voronoi_source.features.push(line);
 							}
 						}
@@ -601,8 +597,7 @@ export const useMapStore = defineStore("map", {
 						let splitLines = lineSplit(curIsoLine, taipeiPolygon);
 						splitLines.features.forEach(
 							line => {
-								let pof = pointOnFeature(line);
-								if (booleanWithin(pof, taipeiPolygon)) {
+								if (booleanContains(taipeiPolygon, line)) {
 									isoline_source.features.push(line);
 								}
 							}
