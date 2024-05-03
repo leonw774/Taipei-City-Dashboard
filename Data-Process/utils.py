@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from datetime import datetime, UTC
+from datetime import datetime
+import pytz
 import json
 from typing import Any, Dict, List, ClassVar, Union, Literal, Optional
 
@@ -201,7 +202,9 @@ def add_component_into_dashboard(
     )
 
 def get_now_timestamp() -> str:
-    return datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S+00")
+    return datetime.now(
+        tz=pytz.timezone('Asia/Taipei')
+    ).strftime("%Y-%m-%d %H:%M:%S+00")
 
 
 ### HELPER CLASSES
