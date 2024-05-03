@@ -64,6 +64,51 @@ pump_status	抽水站狀態	\N	{"mode":"byParam","byParam":{"yParam":"all_pumb_l
 
 
 --
+-- TOC entry 3364 (class 0 OID 20115)
+-- Dependencies: 226
+-- Data for Name: contributors; Type: TABLE DATA; Schema: public; Owner: -
+--
+COPY public.contributors (id, name, link, image) FROM stdin;
+0021	00:21	https://github.com/fuyingxx0/Taipei-City-Dashboard-FE	/images/contributors/codefest.png
+mosquito	捕蚊燈	https://github.com/rakechen-0307/Taipei-City-Dashboard-FE	/images/contributors/codefest.png
+tuic	臺北大數據中心2	https://tuic.gov.taipei/zh	/images/contributors/tuic.png
+weewin	Wee Win	https://github.com/anne030303/Taipei-City-Dashboard-FE	/images/contributors/codefest.png
+劉庭均	劉庭均	https://github.com/Davidliu012	https://github.com/Davidliu012.png
+卓易霆	卓易霆	https://github.com/artgistim	https://github.com/artgistim.png
+台灣大哥大	台灣大哥大	https://www.taiwanmobile.com/	/images/contributors/%E5%8F%B0%E7%81%A3%E5%A4%A7%E5%93%A5%E5%A4%A7.png
+吳典睿	吳典睿	https://github.com/dienruei123	https://github.com/dienruei123.png
+吳承羲	吳承羲	https://github.com/chengxi061	https://github.com/chengxi061.png
+威猛先生	威猛先生(2023)	https://github.com/11044123/Taipei-City-Dashboard-FE	/images/contributors/codefest.png
+廖偉翔	廖偉翔	https://github.com/XinRed	https://github.com/XinRed.png
+張庭梧	張庭梧	https://github.com/tingwoo	https://github.com/tingwoo.png
+徐慶怡	徐慶怡	https://github.com/pandaachuitwm	https://github.com/pandaachuitwm.png
+我們都是112A	我們都是112A	NULL	/images/contributors/codefest.png
+李冠儀	李冠儀	https://github.com/gary920209	https://github.com/gary920209.png
+林昭宏	林昭宏	https://github.com/Toma-L	https://github.com/Toma-L.png
+林柔安	林柔安	https://github.com/anne030303	https://github.com/anne030303.png
+林育緹	林育緹	https://github.com/oohyuti	https://github.com/oohyuti.png
+梁璿安	梁璿安	https://github.com/NTUBOY	https://github.com/NTUBOY.png
+楊明倫	楊明倫	https://github.com/KevinYang2229	https://github.com/KevinYang2229.png
+沈鈺芳	沈鈺芳	https://github.com/11044123/Taipei-City-Dashboard-FE	/images/contributors/codefest.png
+王佑豪	王佑豪	https://github.com/vnaticzhock	https://github.com/vnaticzhock.png
+王彥翔	王彥翔	https://github.com/leonw774	https://github.com/leonw774.png
+蔡宜秀	蔡宜秀	https://github.com/EllenTsaitw	https://github.com/EllenTsaitw.png
+蔡立倫	蔡立倫	https://github.com/tsailawrence	https://github.com/tsailawrence.png
+許富盈	許富盈	https://github.com/fuyingxx0	https://github.com/fuyingxx0.png
+謝芝嫻	謝芝嫻	https://github.com/pigbearhsien	https://github.com/pigbearhsien.png
+賴彥良	賴彥良	https://github.com/yenlianglai	https://github.com/yenlianglai.png
+陳俊嘉	陳俊嘉	https://github.com/11044123/Taipei-City-Dashboard-FE	/images/contributors/codefest.png
+陳又華	陳又華	https://github.com/chenjoachim	https://github.com/chenjoachim.png
+陳宇修	陳宇修	https://github.com/Kenny-Snub-Nose-Monk	https://github.com/Kenny-Snub-Nose-Monk.png
+陳柏睿	陳柏睿	https://github.com/rakechen-0307/Taipei-City-Dashboard-FE	/images/contributors/codefest.png
+顏佑軒	顏佑軒	https://github.com/chrisyen8341	https://github.com/chrisyen8341.png
+黃亘立	黃亘立	https://github.com/j450nhuang	https://github.com/j450nhuang.png
+黃愉翔	黃愉翔	https://github.com/huangyyuuu	https://github.com/huangyyuuu.png
+黃梓睿	黃梓睿	https://github.com/11044123	https://github.com/11044123.png
+\.
+
+
+--
 -- TOC entry 3364 (class 0 OID 20106)
 -- Dependencies: 221
 -- Data for Name: dashboards; Type: TABLE DATA; Schema: public; Owner: -
@@ -71,6 +116,7 @@ pump_status	抽水站狀態	\N	{"mode":"byParam","byParam":{"yParam":"all_pumb_l
 
 COPY public.dashboards (name, components, icon, updated_at, created_at, id, index) FROM stdin;
 範例組件	{7,43,82,90}	bug_report	2024-01-24 09:12:29.419499+00	2023-12-27 06:11:56.841132+00	1	demo-components
+2024黑客松	{}	public	2024-01-24 09:12:29.419499+00	2023-12-27 06:11:56.841132+00	3	hackathon-components
 圖資資訊	{30}	public	2024-01-11 09:32:32.465099+00	2024-01-11 09:32:32.465099+00	2	map-layers
 \.
 

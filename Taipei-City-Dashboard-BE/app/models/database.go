@@ -119,9 +119,10 @@ func MigrateManagerSchema(isForcedDBInit bool) bool {
 		&AuthUser{}, &Role{}, &Group{},
 		&AuthUserGroupRole{},
 		&Component{}, &ComponentChart{}, &ComponentMap{},
+		&Contributor{},
 		&Dashboard{}, &DashboardGroup{}, &Issue{},
 	}
-	var anyTableExists = true
+	var anyTableExists = false
 	DBManagerMigrator := DBManager.Migrator()
 	for _, table := range tablesToCheck {
 		tableExists := DBManagerMigrator.HasTable(table)
