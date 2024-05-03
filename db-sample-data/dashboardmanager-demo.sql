@@ -140,6 +140,7 @@ COPY public.groups (id, name) FROM stdin;
 
 COPY public.dashboard_groups (dashboard_id, group_id) FROM stdin;
 1	1
+3	1
 2	1
 \.
 
