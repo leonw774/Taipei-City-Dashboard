@@ -114,7 +114,7 @@ with manager_engine.connect() as conn:
     ComponentManager(
         id=component_id,
         index=component_index,
-        name='近一年行人事故件數',
+        name='近一年歷月行人事故件數',
         query_type='time',
         query_chart=chart_query,
         history_config={
@@ -129,7 +129,7 @@ with manager_engine.connect() as conn:
         update_freq_unit='month',
         source='道安資訊查詢網',
         short_desc='台北市近一年來歷月的行人交通事故件數',
-        long_desc='台北市近一年來歷月的行人交通事故總件數不同子類別下的件數',
+        long_desc='台北市近一年來歷月的行人交通事故總件數，與特殊子類別的件數',
         use_case='通過查看行人交通事故的不同類別的佔比，了解台北當下的行人安全狀況的一個側面',
         links=['https://roadsafety.tw/Dashboard/Custom'],
         contributors=['王彥翔'],
