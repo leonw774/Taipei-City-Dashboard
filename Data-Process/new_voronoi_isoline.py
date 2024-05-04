@@ -53,21 +53,15 @@ with manager_engine.connect() as conn:
     ).insert(conn, on_conflict_do='update')
 
     # insert map config
-    insert_clause(
-        conn,
-        table_name='component_maps',
-        row_dict={
-            'id': voronoi_map_config_id,
-            'index': 'pm10_measurments',
-            'title': 'PM10 Voronoi',
-            'type': 'voronoi',
-            'size': 'big',
-            'source': 'geojson',
-            'paint': '{"line-color":"#ffffff"}'
-        },
-        on_conflict_do='update',
-        constraint_fields=['id']
-    )
+    MapConfig(
+        id=voronoi_map_config_id,
+        index='pm10_measurments',
+        title='PM10 Voronoi',
+        type='voronoi',
+        size=None,
+        icon=None,
+        paint={'line-color':'#99ffff'}
+    ).insert(conn, on_conflict_do='update')
 
     add_component_into_dashboard(
         conn, voronoi_component_id, 'hackathon-components'
@@ -99,21 +93,15 @@ with manager_engine.connect() as conn:
     ).insert(conn, on_conflict_do='update')
 
     # insert map config
-    insert_clause(
-        conn,
-        table_name='component_maps',
-        row_dict={
-            'id': isoline_map_config_id,
-            'index': 'pm10_measurments',
-            'title': 'PM10 Isoline',
-            'type': 'isoline',
-            'size': 'big',
-            'source': 'geojson',
-            'paint': '{"line-color":"#ffffff"}'
-        },
-        on_conflict_do='update',
-        constraint_fields=['id']
-    )
+    MapConfig(
+        id=isoline_map_config_id,
+        index='pm10_measurments',
+        title='PM10 Isoline',
+        type='isoline',
+        size=None,
+        icon=None,
+        paint={'line-color':'#ffff99'}
+    ).insert(conn, on_conflict_do='update')
 
     add_component_into_dashboard(
         conn, isoline_component_id, 'hackathon-components'

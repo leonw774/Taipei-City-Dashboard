@@ -308,7 +308,7 @@ class ComponentChartConfig(TableBase):
     primary_key_field: ClassVar[str] = 'index'
 
 @dataclass
-class MapConfig:
+class MapConfig(TableBase):
     ### required
     id: int # primary key for this map config
     index: str # the filename for the corresponding file
@@ -329,7 +329,10 @@ class MapConfig:
     ]]
     paint: JsonDict
 
-    ### 
+    ### optional?
+    source: Literal['geojson'] = 'geojson'
+
+    ### constant
     table_name: ClassVar[str] = 'public.component_maps'
     primary_key_field: ClassVar[str] = 'id'
 
