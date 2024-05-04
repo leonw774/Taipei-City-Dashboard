@@ -95,11 +95,12 @@ manager_engine = get_manager_engine()
 query_chart = (f"""
     SELECT village_name AS x_axis, population_density AS data
     FROM {data_table_name}
+    ORDER BY data DESC
 """)
 density_fill_color_stops = [
-    [0, '#ffffff'],
-    [30000, '#ccaa22'],
-    [75000, '#661106'],
+    [0,     '#105010'],
+    [25000, '#808010'],
+    [75000, '#ff1010'],
 ]
 
 component_id = 3
@@ -125,7 +126,7 @@ with manager_engine.connect() as conn:
     ComponentChartConfig(
         index=component_index,
         color=[],
-        types=['TreemapChart'],
+        types=['BarChart'],
         unit='每平方公里人口'
     ).insert(conn, on_conflict_do='update')
 
