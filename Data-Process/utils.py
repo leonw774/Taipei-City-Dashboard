@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-import pytz
+import io
 import json
 from typing import Any, Dict, List, ClassVar, Union, Literal, Optional
 
 import pandas as pd
+import pytz
 from sqlalchemy import (
     create_engine, inspect, text,
     URL, CursorResult, Connection
@@ -168,7 +169,7 @@ def init_data_table_with_df(
                 ))
             conn.commit()
     else:
-        print(f'Table {table_name} already exists, use INSERTs')
+        print(f'Data table {table_name} already exists, use INSERTs')
         with data_engine.connect() as conn:
             for row_dict in df.to_dict(orient='records'):
                 insert_clause(
@@ -179,8 +180,23 @@ def init_data_table_with_df(
                     constraint_fields=constraint_fields
                 )
             conn.commit()
-    print(f'Successfully initialized {table_name}')
+    print(f'Successfully initialized data table {table_name}')
 
+def init_data_table_with_csv_buffer(
+        csv_buffer: bytes,
+        table_name: str,
+        on_conflict_do: str = Literal['nothing', 'update'],
+        constraint_fields: Optional[List[str]] = None,
+        **to_sql_kwargs) -> None:
+    csv_buffer_io = io.BytesIO(csv_buffer)
+    df = pd.read_csv(csv_buffer_io)
+    init_data_table_with_df(
+        df,
+        table_name,
+        on_conflict_do,
+        constraint_fields,
+        **to_sql_kwargs
+    )
 
 def add_component_into_dashboard(
         conn: Connection,
@@ -192,6 +208,10 @@ def add_component_into_dashboard(
             WHERE index={pg_repr(dashboard_index)}'
     )).first()[1]
     if component_id in original_components:
+        print(
+            f'Not adding id {component_id} into dashboard {dashboard_index}: '
+            'already exists'
+        )
         return
     new_components = original_components + [component_id]
     update_clause(
@@ -200,6 +220,7 @@ def add_component_into_dashboard(
         set_dict={'components': new_components},
         where_dict={'index': dashboard_index}
     )
+    print(f'Success add id {component_id} into dashboard {dashboard_index}')
 
 def get_now_timestamp() -> str:
     return datetime.now(
@@ -226,6 +247,7 @@ class TableBase:
             on_conflict_do=on_conflict_do,
             constraint_fields=[self.primary_key_field]
         )
+        print(f'Success insert table {self.table_name}')
 
     def update(self, conn: Connection) -> None:
         self_dict = vars(self)
@@ -236,6 +258,7 @@ class TableBase:
             set_dict=self_dict,
             where_dict={self.primary_key_field: pk_value},
         )
+        print(f'Success update table {self.table_name}')
 
 # Data types and their compatiable chart type
 # two_d:
@@ -286,7 +309,30 @@ class ComponentChartConfig(TableBase):
 
 @dataclass
 class MapConfig:
-    pass
+    ### required
+    id: int # primary key for this map config
+    index: str # the filename for the corresponding file
+    title: str # the name to show on front end
+    type: Literal[
+        'circle', 'fill', 'fill-extrusion', 'line', 'symbol','arc',
+        'voronoi', 'isoline'
+    ]
+    size: Optional[Literal[ # modifier for type
+        'small', 'big', # for circle
+        'wide'# for line
+    ]]
+    icon: Optional[Literal[ # modifier for type
+        'heatmap', # for circle
+        'dash', # for line
+        'metro', 'metro-density', 'triangle_green', 'triangle_white',
+        'youbike', 'bus' # for symbol
+    ]]
+    paint: JsonDict
+
+    ### 
+    table_name: ClassVar[str] = 'public.component_maps'
+    primary_key_field: ClassVar[str] = 'id'
+
 
 @dataclass
 class ComponentManager(TableBase):
