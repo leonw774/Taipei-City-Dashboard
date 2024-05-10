@@ -16,11 +16,24 @@ from get_env import *
 
 DBBasicType = Optional[Union[int, float, str]]
 JsonDict = Dict[str, 'JsonDict']
+
+class JsonList:
+    def __init__(self, *elems):
+        assert all(
+            type(elem) in BASIC_TYPES + COMPO_TYPES
+            for elem in elems
+        )
+        self._init_list = list(elems)
+
+    def __repr__(self) -> str:
+        return '\'' + json.dumps(self._init_list) + '\''
+
 DBValueType = Union[
     DBBasicType, List[DBBasicType], JsonDict
 ]
 Table_Dict = Dict[str, DBValueType]
 BASIC_TYPES = (type(None), int, float, str)
+COMPO_TYPES = (list, dict, JsonList)
 
 
 ### DATABASE CONNECTIONS
@@ -107,14 +120,17 @@ def update_clause(
     return conn.execute(text(stmt))
 
 def pg_repr(obj: DBValueType) -> str:
-    assert type(obj) in BASIC_TYPES + (list, dict), \
-        type(obj)
+    assert type(obj) in BASIC_TYPES + COMPO_TYPES, type(obj)
     
     if obj is None:
         return 'NULL'
 
     if isinstance(obj, str):
-        return '\'' + obj.replace('\'', '\'\'') + '\'' # escape
+        return (
+            '\''
+            + obj.replace('\'', '\'\'') # escape single quote
+            + '\''
+        )
     
     if isinstance(obj, list):
         types = set(type(elem) for elem in obj)
@@ -137,6 +153,10 @@ def pg_repr(obj: DBValueType) -> str:
         
         # dont need check, just use json.dump
         return '\'' + json.dumps(obj) + '\''
+
+    if isinstance(obj, JsonList):
+        # just use json.dump
+        return repr(obj)
 
     # default
     return repr(obj)

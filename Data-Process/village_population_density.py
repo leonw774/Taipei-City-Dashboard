@@ -145,10 +145,10 @@ with manager_engine.connect() as conn:
             },
             'fill-opacity': 0.3
         },
-        property={
-            0: {'key': 'VNAME', 'name': '里名'},
-            1: {'key': 'POP_DENSITY', 'name': '戶籍人口密度'}
-        }
+        property=JsonList(
+            {'key': 'VNAME', 'name': '里名'},
+            {'key': 'POP_DENSITY', 'name': '戶籍人口密度'}
+        )
     ).insert(conn, on_conflict_do='update')
 
     add_component_into_dashboard(
