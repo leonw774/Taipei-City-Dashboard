@@ -20,7 +20,7 @@ csv_buffer += '\n'.join([
 init_data_table_with_csv_buffer(
     csv_buffer,
     table_name,
-    on_conflict_do='nothing',
+    on_conflict_do='update',
     constraint_fields=['date'],
     dtype={'date': sqlalchemy.DateTime}
 )
@@ -31,9 +31,12 @@ manager_engine = get_manager_engine()
 component_id = 2
 component_index = table_name
 chart_query = (f"""
-    SELECT TO_CHAR(date, 'YYYY/MM/DD') AS x_axis, value AS data
-    FROM {table_name}
-    ORDER BY x_axis ASC LIMIT {date_limit}
+    SELECT * FROM (
+        SELECT TO_CHAR(date, 'YYYY/MM/DD') AS x_axis, value AS data
+        FROM {table_name}
+        ORDER BY x_axis DESC LIMIT {date_limit}
+    ) AS tmp
+    ORDER BY x_axis ASC
 """).strip()
 with manager_engine.connect() as conn:
     ComponentManager(
