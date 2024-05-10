@@ -272,6 +272,20 @@ export const useMapStore = defineStore("map", {
 		},
 		// 3-1. Add a local geojson as a source in mapbox
 		addGeojsonSource(map_config, data) {
+			if (map_config['value_replace'] !== undefined) {
+				for (let i = 0; i < data.features.length; i++) {
+					let properties = data.features[i].properties;
+					for (let key in map_config.value_replace) {
+						if (properties[key] === undefined) {
+							continue;
+						}
+						properties[key] = properties[key].replace(
+							new RegExp(map_config.value_replace[key].pattern),
+							map_config.value_replace[key].replacement
+						);
+					}
+				}
+			}
 			if (!["voronoi", "isoline"].includes(map_config.type)) {
 				this.map.addSource(`${map_config.layerId}-source`, {
 					type: "geojson",

@@ -39,12 +39,12 @@ welfare_population	{#2e999b,#80e3d4,#1f9b85,#a5ece0}	{ColumnChart,BarPercentChar
 -- Data for Name: component_maps; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.component_maps (title, type, size, icon, paint, property, index, id, source) FROM stdin;
-抽水站	circle	big	\N	{"circle-color":["match",["get","all_pumb_lights"],"+","#ff9800","#00B2FF"]}	[{"key":"station_name","name":"站名"},{"key":"all_pumb_lights","name":"總抽水狀態"},{"key":"warning_level","name":"目前警戒值"},{"key":"start_pumping_level","name":"抽水起始值"},{"key":"door_num","name":"水門數目"},{"key":"pumb_num","name":"抽水機數目"},{"key":"river_basin","name":"流域"},{"key":"rec_time","name":"記錄時間"}]	patrol_rain_floodgate	50	geojson
-閒置市有公有地	fill	\N	\N	{"fill-color":"#d16ae2","fill-opacity":0.7}	[{"key":"10712土地_1_土地權屬情形","name":"土地權屬情形"},{"key":"10712土地_1_管理機關","name":"管理機關"}]	building_unsued_land	42	geojson
-下水道	circle	big	\N	{"circle-color": ["interpolate", ["linear"], ["to-number", ["get", "ground_far"]], -100, "#F92623", 0.51, "#81bcf5"]}	[{"key": "station_no", "name": "NO"}, {"key": "station_name", "name": "站名"}, {"key": "ground_far", "name": "距地面高[公尺]"}, {"key": "level_out", "name": "水位高[公尺]"}, {"key": "rec_time", "name": "紀錄時間"}]	patrol_rain_sewer	60	geojson
-社福機構	circle	big	\N	{"circle-color": ["match", ["get", "main_type"], "銀髮族服務", "#F49F36", "身障機構", "#F65658", "兒童與少年服務", "#F5C860", "社區服務、NPO", "#9AC17C", "婦女服務", "#4CB495", "貧困危機家庭服務", "#569C9A", "保護性服務", "#60819C", "#2F8AB1"]}	[{"key": "main_type", "name": "主要類別"}, {"key": "sub_type", "name": "次要分類"}, {"key": "name", "name": "名稱"}, {"key": "address", "name": "地址"}]	socl_welfare_organization_plc	64	geojson
-閒置市有(公用)建物	circle	big	\N	{"circle-color":"#655fad"}	[{"key":"門牌","name":"門牌"},{"key":"房屋現況","name":"房屋現況"},{"key":"目前執行情形","name":"目前執行情形"},{"key":"閒置樓層_閒置樓層/該建物總樓層","name":"閒置樓層/總樓層"},{"key":"閒置面積㎡","name":"閒置面積㎡"},{"key":"基地管理機關","name":"基地管理機關"},{"key":"建物管理機關","name":"建物管理機關"},{"key":"原使用用途","name":"原使用用途"},{"key":"基地所有權人","name":"基地所有權人"},{"key":"建物標示","name":"建物標示"},{"key":"建築完成日期","name":"建築完成日期"}]	building_unsued_public	43	geojson
+COPY public.component_maps (title, type, size, icon, paint, property, value_replace, index, id, source) FROM stdin;
+抽水站	circle	big	\N	{"circle-color":["match",["get","all_pumb_lights"],"+","#ff9800","#00B2FF"]}	[{"key":"station_name","name":"站名"},{"key":"all_pumb_lights","name":"總抽水狀態"},{"key":"warning_level","name":"目前警戒值"},{"key":"start_pumping_level","name":"抽水起始值"},{"key":"door_num","name":"水門數目"},{"key":"pumb_num","name":"抽水機數目"},{"key":"river_basin","name":"流域"},{"key":"rec_time","name":"記錄時間"}] \N	patrol_rain_floodgate	50	geojson
+閒置市有公有地	fill	\N	\N	{"fill-color":"#d16ae2","fill-opacity":0.7}	[{"key":"10712土地_1_土地權屬情形","name":"土地權屬情形"},{"key":"10712土地_1_管理機關","name":"管理機關"}] \N	building_unsued_land	42	geojson
+下水道	circle	big	\N	{"circle-color": ["interpolate", ["linear"], ["to-number", ["get", "ground_far"]], -100, "#F92623", 0.51, "#81bcf5"]}	[{"key": "station_no", "name": "NO"}, {"key": "station_name", "name": "站名"}, {"key": "ground_far", "name": "距地面高[公尺]"}, {"key": "level_out", "name": "水位高[公尺]"}, {"key": "rec_time", "name": "紀錄時間"}] \N	patrol_rain_sewer	60	geojson
+社福機構	circle	big	\N	{"circle-color": ["match", ["get", "main_type"], "銀髮族服務", "#F49F36", "身障機構", "#F65658", "兒童與少年服務", "#F5C860", "社區服務、NPO", "#9AC17C", "婦女服務", "#4CB495", "貧困危機家庭服務", "#569C9A", "保護性服務", "#60819C", "#2F8AB1"]}	[{"key": "main_type", "name": "主要類別"}, {"key": "sub_type", "name": "次要分類"}, {"key": "name", "name": "名稱"}, {"key": "address", "name": "地址"}] \N	socl_welfare_organization_plc	64	geojson
+閒置市有(公用)建物	circle	big	\N	{"circle-color":"#655fad"}	[{"key":"門牌","name":"門牌"},{"key":"房屋現況","name":"房屋現況"},{"key":"目前執行情形","name":"目前執行情形"},{"key":"閒置樓層_閒置樓層/該建物總樓層","name":"閒置樓層/總樓層"},{"key":"閒置面積㎡","name":"閒置面積㎡"},{"key":"基地管理機關","name":"基地管理機關"},{"key":"建物管理機關","name":"建物管理機關"},{"key":"原使用用途","name":"原使用用途"},{"key":"基地所有權人","name":"基地所有權人"},{"key":"建物標示","name":"建物標示"},{"key":"建築完成日期","name":"建築完成日期"}] {"建築完成日期": {"pattern": "(\\d{1,3})\\.(\\d{1,2})\\.(\\d{1,2})", "replacement": "$1年$2月$3日"}}	building_unsued_public	43	geojson
 \.
 
 
@@ -64,8 +64,7 @@ pump_status	抽水站狀態	\N	{"mode":"byParam","byParam":{"yParam":"all_pumb_l
 
 
 --
--- TOC entry 3364 (class 0 OID 20115)
--- Dependencies: 226
+-- Added Manually
 -- Data for Name: contributors; Type: TABLE DATA; Schema: public; Owner: -
 --
 COPY public.contributors (id, name, link, image) FROM stdin;
