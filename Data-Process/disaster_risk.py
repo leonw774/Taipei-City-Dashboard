@@ -92,7 +92,7 @@ old_house_vuln_point = {
     vname: 0
     for vname in vnames
 }
-for old_house in old_house_points:
+for old_house in tqdm(old_house_points):
     for vname in vnames:
         vborder = village_borders_shapes[vname]
         # check intersect
