@@ -286,7 +286,13 @@ export const useMapStore = defineStore("map", {
 					}
 				}
 			}
-			if (!["voronoi", "isoline", "buffered"].includes(map_config.type)) {
+			let isBuffered = false;
+			if (map_config.type.startsWith("buffered")) {
+				isBuffered = true;
+				this.AddBufferedLayer(map_config, data);
+				map_config.type = map_config.type.substring(9);
+			}
+			if (!["voronoi", "isoline"].includes(map_config.type)) {
 				if (this.map.getSource(`${map_config.layerId}-source`) === undefined) {
 					this.map.addSource(`${map_config.layerId}-source`, {
 						type: "geojson",
@@ -300,8 +306,6 @@ export const useMapStore = defineStore("map", {
 				this.AddVoronoiMapLayer(map_config, data);
 			} else if (map_config.type === "isoline") {
 				this.AddIsolineMapLayer(map_config, data);
-			} else if (map_config.type === "buffered") {
-				this.AddBufferedLayer(map_config, data);
 			} else {
 				this.addMapLayer(map_config);
 			}
@@ -650,15 +654,19 @@ export const useMapStore = defineStore("map", {
 					}
 				}
 			);
-			console.log(buffer_source);
+			map_config.paint["buffer-radius"] = undefined;
 			// Add source and layer
-			this.map.addSource(`${map_config.layerId}-source`, {
-				type: "geojson",
-				data: { ...buffer_source },
-			});
+			map_config.layerId += "buffer";
+			if (this.map.getSource(`${map_config.layerId}-source`) === undefined) {
+				this.map.addSource(`${map_config.layerId}-source`, {
+					type: "geojson",
+					data: { ...buffer_source },
+				});
+			}
 			let new_map_config = { ...map_config };
 			new_map_config.type = "fill";
 			this.addMapLayer(new_map_config);
+			map_config.layerId = map_config.layerId.substring(0, map_config.layerId.length - 6);
 		},
 		//  5. Turn on the visibility for a exisiting map layer
 		turnOnMapLayerVisibility(mapLayerId) {
