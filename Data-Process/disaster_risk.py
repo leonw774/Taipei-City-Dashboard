@@ -41,21 +41,30 @@ old_house_geojson_path = (
 with open(old_house_geojson_path) as old_house_geojson_file:
     old_house_geojson = json.load(old_house_geojson_file)
 
-old_house_points = {
-	shapely.from_geojson(json.dumps(feature))
-    for feature in old_house_geojson['features']
-    if feature['properties']['age_2021'] < 20
-}
+# old_house_points = {
+# 	shapely.from_geojson(json.dumps(feature))
+#     for feature in old_house_geojson['features']
+#     if feature['properties']['age_2021'] < 20
+# }
 
-print(old_house_points)
+# print(old_house_points)
 
-
+filtered_features = [
+    feature
+    for feature in old_house_geojson["features"]
+    if feature["properties"]["age_2021"] < 20 and feature["geometry"]is not None
+]
+# print(old_house_geojson["features"][0])
+print(filtered_features)
 
 
 # village_borders_shapes = {
 #     feature['properties']['coordinates']: shapely.from_geojson(json.dumps(feature))
 #     for feature in village_borders_geojson['features']
 # }
+
+# 過濾age_2021小於20的點位
+
 
 
 
