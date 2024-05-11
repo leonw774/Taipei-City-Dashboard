@@ -13,7 +13,7 @@ import mapboxGl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import axios from "axios";
 import { Threebox } from "threebox-plugin";
-import { bbox, booleanContains, booleanWithin, featureCollection, flatten, isolines, lineSplit, point, polygon, voronoi } from "@turf/turf"
+import { bbox, booleanContains, booleanWithin, buffer, featureCollection, flatten, isolines, lineSplit, point, polygon, voronoi } from "@turf/turf"
 
 // Other Stores
 import { useAuthStore } from "./authStore";
@@ -286,7 +286,7 @@ export const useMapStore = defineStore("map", {
 					}
 				}
 			}
-			if (!["voronoi", "isoline"].includes(map_config.type)) {
+			if (!["voronoi", "isoline", "buffered"].includes(map_config.type)) {
 				if (this.map.getSource(`${map_config.layerId}-source`) === undefined) {
 					this.map.addSource(`${map_config.layerId}-source`, {
 						type: "geojson",
@@ -300,6 +300,8 @@ export const useMapStore = defineStore("map", {
 				this.AddVoronoiMapLayer(map_config, data);
 			} else if (map_config.type === "isoline") {
 				this.AddIsolineMapLayer(map_config, data);
+			} else if (map_config.type === "buffered") {
+				this.AddBufferedLayer(map_config, data);
 			} else {
 				this.addMapLayer(map_config);
 			}
@@ -631,6 +633,31 @@ export const useMapStore = defineStore("map", {
 			delete map_config.paint?.["isoline-key"];
 
 			let new_map_config = { ...map_config, type: "line" };
+			this.addMapLayer(new_map_config);
+		},
+		// 4-5. Add Map Layer for Buffer Lines
+		AddBufferedLayer(map_config, data) {
+			let buffer_source = {
+				type: data.type,
+				crs: data.crs,
+				features: []
+			};
+			data.features.forEach(
+				feature => {
+					if (feature.geometry !== null) {
+						let buffered_feature = buffer(feature, map_config.paint["buffer-radius"]);
+						buffer_source.features.push(buffered_feature);
+					}
+				}
+			);
+			console.log(buffer_source);
+			// Add source and layer
+			this.map.addSource(`${map_config.layerId}-source`, {
+				type: "geojson",
+				data: { ...buffer_source },
+			});
+			let new_map_config = { ...map_config };
+			new_map_config.type = "fill";
 			this.addMapLayer(new_map_config);
 		},
 		//  5. Turn on the visibility for a exisiting map layer
