@@ -675,7 +675,7 @@
 				"warning_level": null,
 				"start_pumping_level": null
 			},
-			"geometry": null
+			"geometry": { "type": "Point", "coordinates": [121.5346, 25.00961] }
 		},
 		{
 			"type": "Feature",
