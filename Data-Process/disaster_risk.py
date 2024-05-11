@@ -86,7 +86,7 @@ with open(old_house_geojson_path) as old_house_geojson_file:
 old_house_points = [
     shapely.from_geojson(json.dumps(feature))
     for feature in old_house_geojson["features"]
-    if feature["properties"]["age_2021"] < 20 and feature["geometry"]is not None
+    if feature["properties"]["age_2021"] > 20 and feature["geometry"]is not None
 ]
 
 danger_slope_vuln_point = {
