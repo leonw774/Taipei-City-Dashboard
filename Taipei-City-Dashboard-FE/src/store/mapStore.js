@@ -13,7 +13,7 @@ import mapboxGl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import axios from "axios";
 import { Threebox } from "threebox-plugin";
-import { bbox, booleanContains, booleanWithin, buffer, featureCollection, flatten, isolines, lineSplit, point, polygon, voronoi } from "@turf/turf"
+import * as turf from "@turf/turf"
 
 // Other Stores
 import { useAuthStore } from "./authStore";
@@ -40,7 +40,7 @@ import { calculateGradientSteps } from "../assets/configs/mapbox/arcGradient";
 import { interpolation } from "../assets/utilityFunctions/interpolation.js";
 // import { marchingSquare } from "../assets/utilityFunctions/marchingSquare.js";
 
-let taipeiPolygon = polygon([[
+let taipeiPolygon = turf.polygon([[
 	[121.51840, 25.17195],
 	[121.52360, 25.18261],
 	[121.56061, 25.21125],
@@ -74,7 +74,7 @@ let taipeiPolygon = polygon([[
 	[121.50312, 25.17418],
 	[121.51840, 25.17195]
 ]]);
-let taipeiBBox = bbox(taipeiPolygon);
+let taipeiBBox = turf.bbox(taipeiPolygon);
 
 export const useMapStore = defineStore("map", {
 	state: () => ({
@@ -503,14 +503,14 @@ export const useMapStore = defineStore("map", {
 			coords = coords.filter((_, ind) => !shouldBeRemoved[ind]);
 
 			// make turf points
-			let pointCollection = featureCollection(
+			let pointCollection = turf.featureCollection(
 				coords.map(
-					(coord) => point(coord)
+					(coord) => turf.point(coord)
 				)
 			);
 
 			// Calculate cell for each coordinate
-			let cells = voronoi(pointCollection, {"bbox": taipeiBBox});
+			let cells = turf.voronoi(pointCollection, {"bbox": taipeiBBox});
 
 			// Push cell outlines to source data
 			for (let i = 0; i < cells.features.length; i++) {
@@ -528,10 +528,10 @@ export const useMapStore = defineStore("map", {
 				}
 				else {
 					// split current line with taipeiPolygon and check each again
-					let splitLines = lineSplit(curLineString, taipeiPolygon);
+					let splitLines = turf.lineSplit(curLineString, taipeiPolygon);
 					splitLines.features.forEach(
 						line => {
-							if (booleanContains(taipeiPolygon, line)) {
+							if (turf.booleanContains(taipeiPolygon, line)) {
 								voronoi_source.features.push(line);
 							}
 						}
@@ -596,30 +596,30 @@ export const useMapStore = defineStore("map", {
 			// - Turn the interpolation result into the point collection
 			let interpolatedPoints = [];
 			for (let n = 0; n < interpolationResult.length; n++) {
-				interpolatedPoints.push(point(
+				interpolatedPoints.push(turf.point(
 					[lngStart + n % colN * gridSize, latStart + Math.floor(n / colN) * gridSize],
 					{"value": interpolationResult[n]}
 				));
 			}
-			let interpolatedPointCollection = featureCollection(interpolatedPoints);
+			let interpolatedPointCollection = turf.featureCollection(interpolatedPoints);
 			// [0 1 ... 17] ==> [40, 42, 44 ... 74]
 			let breaks = [...Array((74 - 40) / 2 + 1).keys()].map(v => (v * 2 + 40));
-			let isoline_data = isolines(interpolatedPointCollection, breaks, {zProperty: "value"});
+			let isoline_data = turf.isolines(interpolatedPointCollection, breaks, {zProperty: "value"});
 			// flatten from MultiLineString to LineString
-			isoline_data = flatten(isoline_data);
+			isoline_data = turf.flatten(isoline_data);
 
 			isoline_data.features = isoline_data.features.filter(
 				curIsoLine => {
 					// check if current line is in taipeiPolygon
-					if (booleanWithin(curIsoLine, taipeiPolygon)) {
+					if (turf.booleanWithin(curIsoLine, taipeiPolygon)) {
 						isoline_source.features.push(curIsoLine);
 					}
 					else {
 						// split current line with taipeiPolygon and check each again
-						let splitLines = lineSplit(curIsoLine, taipeiPolygon);
+						let splitLines = turf.lineSplit(curIsoLine, taipeiPolygon);
 						splitLines.features.forEach(
 							line => {
-								if (booleanContains(taipeiPolygon, line)) {
+								if (turf.booleanContains(taipeiPolygon, line)) {
 									isoline_source.features.push(line);
 								}
 							}
@@ -649,11 +649,14 @@ export const useMapStore = defineStore("map", {
 			data.features.forEach(
 				feature => {
 					if (feature.geometry !== null) {
-						let buffered_feature = buffer(feature, map_config.paint["buffer-radius"]);
+						let buffered_feature = turf.buffer(feature, map_config.paint["buffer-paint"]["buffer-radius"]);
 						buffer_source.features.push(buffered_feature);
 					}
 				}
 			);
+			buffer_source.features = [buffer_source.features.reduce(
+				turf.union, buffer_source.features[0]
+			)];
 			map_config.paint["buffer-radius"] = undefined;
 			// Add source and layer
 			map_config.layerId += "buffer";
@@ -665,6 +668,7 @@ export const useMapStore = defineStore("map", {
 			}
 			let new_map_config = { ...map_config };
 			new_map_config.type = "fill";
+			new_map_config.paint = new_map_config.paint["buffer-paint"];
 			this.addMapLayer(new_map_config);
 			map_config.layerId = map_config.layerId.substring(0, map_config.layerId.length - 6);
 		},
