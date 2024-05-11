@@ -85,7 +85,7 @@ with open(old_house_geojson_path) as old_house_geojson_file:
 old_house_points = [
     shapely.from_geojson(json.dumps(feature))
     for feature in old_house_geojson["features"]
-    if feature["properties"]["age_2021"] < 20 and feature["geometry"]is not None
+    if feature["properties"]["age_2021"] > 20 and feature["geometry"] is not None
 ]
 
 old_house_vuln_point = {
@@ -188,6 +188,8 @@ village_population_density = {
     vname: round(village_population[vname] / village_area[vname], 2)
     for vname in village_area
 }
+
+
 
 # Set Manager DB
 
