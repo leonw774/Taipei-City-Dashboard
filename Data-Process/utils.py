@@ -348,9 +348,9 @@ class MapConfig(TableBase):
         'youbike', 'bus' # for symbol
     ]]
     paint: JsonDict
-    property: JsonDict
 
     ### optional?
+    property: JsonDict = None
     source: Literal['geojson'] = 'geojson'
 
     ### constant
