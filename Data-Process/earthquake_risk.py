@@ -294,8 +294,9 @@ if __name__ == '__main__':
     for feature in village_risk_index_geojson['features']:
         vname = feature['properties']['VNAME']
         for intensity, _weight in quake_intensity_weight:
-            feature['properties'][intensity] = (
-                village_risk_indices[intensity][vname]
+            feature['properties'][intensity] = round(
+                village_risk_indices[intensity][vname],
+                5
             )
     with open(village_risk_index_geojson_path, 'w') as f:
         json.dump(village_risk_index_geojson, f)
@@ -385,7 +386,7 @@ if __name__ == '__main__':
         FROM {village_risk_index_table_name}
         WHERE intensity_{intensity} >= {range_begin} AND intensity_{intensity} < {range_end})
         """.strip()
-        for category, range_begin, range_end in [('低', 0, 0.25), ('中', 0.25, 0.5), ('高', 0.5, 1)]
+        for category, range_begin, range_end in [('低(<0.25)', 0, 0.25), ('中(<0.5)', 0.25, 0.5), ('高(>0.5)', 0.5, 1)]
         for intensity, _ in quake_intensity_weight
     ]
     risk_query_chart = '\nUNION ALL\n'.join(risk_query_chart)
@@ -430,7 +431,7 @@ if __name__ == '__main__':
             MapConfig(
                 id=risk_component_id+i,
                 index=village_risk_index_geojson_filename,
-                title=f'{intensity}',
+                title=intensity,
                 type='fill',
                 paint={
                     'fill-color': {
@@ -441,7 +442,7 @@ if __name__ == '__main__':
                 },
                 property=JsonList(
                     {'key': 'VNAME', 'name': '里名'},
-                    {'key': f'intensity_{intensity}', 'name': '災害風險評估指數'}
+                    {'key': intensity, 'name': '災害風險評估指數'}
                 )
             ).insert(conn, on_conflict_do='update')
 
