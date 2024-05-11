@@ -74,15 +74,9 @@ danger_slope_vuln_point = {
 
 for vname in vnames:
     village_vuln_point[vname] += danger_slope_vuln_point[vname]
-print(village_vuln_point)
+# print(village_vuln_point)
 
 ###### Old House
-from shapely.geometry import Point, MultiPolygon
-
-from shapely.geometry import shape
-
-# 定義坐標點
-point = Point(121.5055892, 25.1442078)
 
 old_house_geojson_path = (
     '../Data-Process/data/building_age.geojson'
@@ -90,42 +84,28 @@ old_house_geojson_path = (
 with open(old_house_geojson_path) as old_house_geojson_file:
     old_house_geojson = json.load(old_house_geojson_file)
 
-# old_house_points = {
-# 	shapely.from_geojson(json.dumps(feature))
-#     for feature in old_house_geojson['features']
-#     if feature['properties']['age_2021'] < 20
-# }
 
-# print(old_house_points)
-
-filtered_features = [
-    feature
+old_house_points = [
+    shapely.from_geojson(json.dumps(feature))
     for feature in old_house_geojson["features"]
     if feature["properties"]["age_2021"] < 20 and feature["geometry"]is not None
 ]
-# print(old_house_geojson["features"][0])
-print(filtered_features)
 
+danger_slope_vuln_point = {
+    vname: 0
+    for vname in vnames
+}
 
-# village_borders_shapes = {
-#     feature['properties']['coordinates']: shapely.from_geojson(json.dumps(feature))
-#     for feature in village_borders_geojson['features']
-# }
-
-# 過濾age_2021小於20的點位
-
-
-
-
-
-# 
-# for village, shape in village_borders_shapes.items():
-#     if point.within(shape):
-#         print(f"該點位於 {village}")
-#     else:
-#         print(f"該點不在 {village}")
-
-
-
+for old_house in old_house_points:
+    for vname in vnames:
+        vborder = village_borders_shapes[vname]
+        # check intersect
+        if not shapely.intersects(old_house, vborder):
+            continue
+        
+        danger_slope_vuln_point[vname] += 1
+		
+# print(danger_slope_vuln_point)
+		
 
 ###### Liquefaction
