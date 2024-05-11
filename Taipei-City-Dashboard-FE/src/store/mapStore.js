@@ -287,7 +287,7 @@ export const useMapStore = defineStore("map", {
 				}
 			}
 			let isBuffered = false;
-			if (map_config.type.startsWith("buffered")) {
+			if (map_config.type.startsWith("buffered-")) {
 				isBuffered = true;
 				this.AddBufferedLayer(map_config, data);
 				map_config.type = map_config.type.substring(9);
@@ -650,13 +650,11 @@ export const useMapStore = defineStore("map", {
 				feature => {
 					if (feature.geometry !== null) {
 						let buffered_feature = turf.buffer(feature, map_config.paint["buffer-paint"]["buffer-radius"]);
+						console.log(buffered_feature);
 						buffer_source.features.push(buffered_feature);
 					}
 				}
 			);
-			buffer_source.features = [buffer_source.features.reduce(
-				turf.union, buffer_source.features[0]
-			)];
 			map_config.paint["buffer-radius"] = undefined;
 			// Add source and layer
 			map_config.layerId += "buffer";
