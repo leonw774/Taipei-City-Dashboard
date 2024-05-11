@@ -319,7 +319,7 @@ class ComponentChartConfig(TableBase):
         'GuageChart', 'RadarChart', 'TimelineSeparateChart',
         'TimelineStackedChart', 'TreemapChart', 'DistrictChart',
         'MetroChart', 'HeatmapChart', 'PolarAreaChart', 'ColumnLineChart'
-        'BarChartWithGoal', 'IconPercentChart'
+        'BarChartWithGoal', 'IconPercentChart', 'MapLegend'
     ]]
     unit: str
 
@@ -337,19 +337,19 @@ class MapConfig(TableBase):
         'circle', 'fill', 'fill-extrusion', 'line', 'symbol','arc',
         'voronoi', 'isoline'
     ]
+
+    ### optional
     size: Optional[Literal[ # modifier for type
         'small', 'big', # for circle
         'wide'# for line
-    ]]
+    ]] = None
     icon: Optional[Literal[ # modifier for type
         'heatmap', # for circle
         'dash', # for line
         'metro', 'metro-density', 'triangle_green', 'triangle_white',
         'youbike', 'bus' # for symbol
-    ]]
-    paint: JsonDict
-
-    ### optional?
+    ]] = None
+    paint: Optional[JsonDict] = None
     property: JsonDict = None
     source: Literal['geojson'] = 'geojson'
 

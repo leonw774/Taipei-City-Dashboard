@@ -98,9 +98,9 @@ query_chart = (f"""
     ORDER BY data DESC
 """)
 density_fill_color_stops = [
-    [0,     '#105010'],
-    [25000, '#808010'],
-    [75000, '#ff1010'],
+    [0,     '#505050'],
+    [25000, '#909010'],
+    [75000, '#ffff10'],
 ]
 
 component_id = 3

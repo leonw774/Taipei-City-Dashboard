@@ -234,7 +234,7 @@ export const useMapStore = defineStore("map", {
 		// 1. Passes in the map_config (an Array of Objects) of a component and adds all layers to the map layer list
 		addToMapLayerList(map_config) {
 			map_config.forEach((element) => {
-				let mapLayerId = `${element.index}-${element.type}`;
+				let mapLayerId = `${element.index}-${element.type}-${element.id}`;
 				// 1-1. If the layer exists, simply turn on the visibility and add it to the visible layers list
 				if (
 					this.currentLayers.find((element) => element === mapLayerId)
@@ -287,10 +287,12 @@ export const useMapStore = defineStore("map", {
 				}
 			}
 			if (!["voronoi", "isoline"].includes(map_config.type)) {
-				this.map.addSource(`${map_config.layerId}-source`, {
-					type: "geojson",
-					data: { ...data },
-				});
+				if (this.map.getSource(`${map_config.layerId}-source`) === undefined) {
+					this.map.addSource(`${map_config.layerId}-source`, {
+						type: "geojson",
+						data: { ...data },
+					});
+				}
 			}
 			if (map_config.type === "arc") {
 				this.AddArcMapLayer(map_config, data);
@@ -638,7 +640,7 @@ export const useMapStore = defineStore("map", {
 		// 6. Turn off the visibility of an exisiting map layer but don't remove it completely
 		turnOffMapLayerVisibility(map_config) {
 			map_config.forEach((element) => {
-				let mapLayerId = `${element.index}-${element.type}`;
+				let mapLayerId = `${element.index}-${element.type}-${element.id}`;
 				this.loadingLayers = this.loadingLayers.filter(
 					(el) => el !== mapLayerId
 				);
@@ -766,7 +768,7 @@ export const useMapStore = defineStore("map", {
 				return;
 			}
 			map_configs.map((map_config) => {
-				let mapLayerId = `${map_config.index}-${map_config.type}`;
+				let mapLayerId = `${map_config.index}-${map_config.type}-${map_config.id}`;
 				if (map_config && map_config.type === "arc") {
 					// Only turn off original layer visibility
 					this.map.setLayoutProperty(
@@ -841,7 +843,7 @@ export const useMapStore = defineStore("map", {
 				return;
 			}
 			map_configs.map((map_config) => {
-				let mapLayerId = `${map_config.index}-${map_config.type}`;
+				let mapLayerId = `${map_config.index}-${map_config.type}-${map_config.id}`;
 				if (map_config.title !== xParam) {
 					this.map.setLayoutProperty(
 						mapLayerId,
@@ -864,7 +866,7 @@ export const useMapStore = defineStore("map", {
 				return;
 			}
 			map_configs.map((map_config) => {
-				let mapLayerId = `${map_config.index}-${map_config.type}`;
+				let mapLayerId = `${map_config.index}-${map_config.type}-${map_config.id}`;
 				if (map_config && map_config.type === "arc") {
 					if (this.map.getLayer(`${mapLayerId}-filtered`)) {
 						this.map.removeLayer(`${mapLayerId}-filtered`);
@@ -893,7 +895,7 @@ export const useMapStore = defineStore("map", {
 				return;
 			}
 			map_configs.map((map_config) => {
-				let mapLayerId = `${map_config.index}-${map_config.type}`;
+				let mapLayerId = `${map_config.index}-${map_config.type}-${map_config.id}`;
 				this.map.setLayoutProperty(mapLayerId, "visibility", "visible");
 			});
 		},
