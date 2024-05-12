@@ -234,7 +234,7 @@ export const useMapStore = defineStore("map", {
 		// 1. Passes in the map_config (an Array of Objects) of a component and adds all layers to the map layer list
 		addToMapLayerList(map_config) {
 			map_config.forEach((element) => {
-				let mapLayerId = `${element.index}-${element.type}-${element.id}`;
+				let mapLayerId = `${element.index}-${element.id}-${element.type}`;
 				// 1-1. If the layer exists, simply turn on the visibility and add it to the visible layers list
 				if (
 					this.currentLayers.find((element) => element === mapLayerId)
@@ -657,7 +657,7 @@ export const useMapStore = defineStore("map", {
 			);
 			map_config.paint["buffer-radius"] = undefined;
 			// Add source and layer
-			map_config.layerId += "buffer";
+			map_config.layerId += "-buffer";
 			if (this.map.getSource(`${map_config.layerId}-source`) === undefined) {
 				this.map.addSource(`${map_config.layerId}-source`, {
 					type: "geojson",
@@ -668,16 +668,21 @@ export const useMapStore = defineStore("map", {
 			new_map_config.type = "fill";
 			new_map_config.paint = new_map_config.paint["buffer-paint"];
 			this.addMapLayer(new_map_config);
-			map_config.layerId = map_config.layerId.substring(0, map_config.layerId.length - 6);
+			map_config.layerId = map_config.layerId.substring(0, map_config.layerId.length - 7);
 		},
 		//  5. Turn on the visibility for a exisiting map layer
 		turnOnMapLayerVisibility(mapLayerId) {
 			this.map.setLayoutProperty(mapLayerId, "visibility", "visible");
+			if (mapLayerId.type.includes("buffered-")) {
+				let mapBufferLayerId = `${mapLayerId}-buffer`;
+				console.log(mapBufferLayerId);
+				this.map.setLayoutProperty(mapBufferLayerId, "visibility", "visible");
+			}
 		},
 		// 6. Turn off the visibility of an exisiting map layer but don't remove it completely
-		turnOffMapLayerVisibility(map_config) {
-			map_config.forEach((element) => {
-				let mapLayerId = `${element.index}-${element.type}-${element.id}`;
+		turnOffMapLayerVisibility(map_configs) {
+			map_configs.forEach((map_config) => {
+				let mapLayerId = `${map_config.index}-${map_config.id}-${map_config.type}`;
 				this.loadingLayers = this.loadingLayers.filter(
 					(el) => el !== mapLayerId
 				);
@@ -693,6 +698,18 @@ export const useMapStore = defineStore("map", {
 				this.currentVisibleLayers = this.currentVisibleLayers.filter(
 					(element) => element !== mapLayerId
 				);
+
+				if (map_config.type.includes("buffered-")) {
+					let mapBufferLayerId = `${map_config.index}-${map_config.id}-${map_config.type}-buffer`;
+					if (this.map.getLayer(mapBufferLayerId)) {
+						this.map.setFilter(mapBufferLayerId, null);
+						this.map.setLayoutProperty(
+							mapBufferLayerId,
+							"visibility",
+							"none"
+						);
+					}
+				}
 			});
 			this.removePopup();
 		},
@@ -805,7 +822,7 @@ export const useMapStore = defineStore("map", {
 				return;
 			}
 			map_configs.map((map_config) => {
-				let mapLayerId = `${map_config.index}-${map_config.type}-${map_config.id}`;
+				let mapLayerId = `${map_config.index}-${map_config.id}-${map_config.type}`;
 				if (map_config && map_config.type === "arc") {
 					// Only turn off original layer visibility
 					this.map.setLayoutProperty(
@@ -880,7 +897,7 @@ export const useMapStore = defineStore("map", {
 				return;
 			}
 			map_configs.map((map_config) => {
-				let mapLayerId = `${map_config.index}-${map_config.type}-${map_config.id}`;
+				let mapLayerId = `${map_config.index}-${map_config.id}-${map_config.type}`;
 				if (map_config.title !== xParam) {
 					this.map.setLayoutProperty(
 						mapLayerId,
@@ -903,7 +920,7 @@ export const useMapStore = defineStore("map", {
 				return;
 			}
 			map_configs.map((map_config) => {
-				let mapLayerId = `${map_config.index}-${map_config.type}-${map_config.id}`;
+				let mapLayerId = `${map_config.index}-${map_config.id}-${map_config.type}`;
 				if (map_config && map_config.type === "arc") {
 					if (this.map.getLayer(`${mapLayerId}-filtered`)) {
 						this.map.removeLayer(`${mapLayerId}-filtered`);
@@ -932,7 +949,7 @@ export const useMapStore = defineStore("map", {
 				return;
 			}
 			map_configs.map((map_config) => {
-				let mapLayerId = `${map_config.index}-${map_config.type}-${map_config.id}`;
+				let mapLayerId = `${map_config.index}-${map_config.id}-${map_config.type}`;
 				this.map.setLayoutProperty(mapLayerId, "visibility", "visible");
 			});
 		},
