@@ -523,7 +523,7 @@ export const useMapStore = defineStore("map", {
 				}
 
 				// check if current line is in taipeiPolygon
-				if (booleanWithin(curLineString, taipeiPolygon)) {
+				if (turf.booleanWithin(curLineString, taipeiPolygon)) {
 					voronoi_source.features.push(curLineString);
 				}
 				else {

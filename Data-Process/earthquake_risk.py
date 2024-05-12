@@ -386,7 +386,7 @@ if __name__ == '__main__':
         FROM {village_risk_index_table_name}
         WHERE intensity_{intensity} >= {range_begin} AND intensity_{intensity} < {range_end})
         """.strip()
-        for category, range_begin, range_end in [('低(<0.25)', 0, 0.25), ('中(<0.5)', 0.25, 0.5), ('高(>0.5)', 0.5, 1)]
+        for category, range_begin, range_end in [('低(<0.25)', 0, 0.25), ('中(<0.5)', 0.25, 0.5), ('高(>=0.5)', 0.5, 1)]
         for intensity, _ in quake_intensity_weight
     ]
     risk_query_chart = '\nUNION ALL\n'.join(risk_query_chart)

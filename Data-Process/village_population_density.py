@@ -92,11 +92,24 @@ if a != 'skip-init-data':
 
 # Set Manager DB
 manager_engine = get_manager_engine()
-query_chart = (f"""
-    SELECT village_name AS x_axis, population_density AS data
-    FROM {data_table_name}
-    ORDER BY data DESC
-""")
+intervals = [
+    ('0~2萬人/km^2', 0, 20000),
+    ('2~4萬人/km^2', 20000, 40000),
+    ('4~6萬人/km^2', 40000, 60000),
+    ('6~8萬人/km^2', 60000, 80000),
+    ('8~10萬人/km^2',  80000, 120000)
+]
+query_chart = ' UNION ALL '.join([
+    f"""
+        (SELECT '{interval_name}' AS x_axis, COUNT(*) AS data
+        FROM {data_table_name}
+        WHERE population_density >= {range_begin} AND population_density < {range_end}
+        GROUP BY x_axis
+        ORDER BY x_axis ASC)
+    """.strip()
+    for interval_name, range_begin, range_end in intervals
+
+])
 density_fill_color_stops = [
     [0,     '#505050'],
     [25000, '#909010'],
@@ -125,9 +138,9 @@ with manager_engine.connect() as conn:
 
     ComponentChartConfig(
         index=component_index,
-        color=[],
-        types=['BarChart'],
-        unit='每平方公里人口'
+        color=['#c0c050'],
+        types=['ColumnChart'],
+        unit='個里'
     ).insert(conn, on_conflict_do='update')
 
     MapConfig(
