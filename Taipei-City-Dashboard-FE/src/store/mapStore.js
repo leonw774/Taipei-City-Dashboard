@@ -673,7 +673,7 @@ export const useMapStore = defineStore("map", {
 		//  5. Turn on the visibility for a exisiting map layer
 		turnOnMapLayerVisibility(mapLayerId) {
 			this.map.setLayoutProperty(mapLayerId, "visibility", "visible");
-			if (mapLayerId.type.includes("buffered-")) {
+			if (mapLayerId.includes("buffered-")) {
 				let mapBufferLayerId = `${mapLayerId}-buffer`;
 				console.log(mapBufferLayerId);
 				this.map.setLayoutProperty(mapBufferLayerId, "visibility", "visible");
